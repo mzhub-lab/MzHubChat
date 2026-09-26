@@ -88,23 +88,44 @@ async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if user.id != ADMIN_ID:
         return
 
-    if not context.args:
-        await update.message.reply_text("⚠️ Format galat hai! Use karein: `/broadcast <Aapka Message>`")
+    # Check karein agar Admin ne kisi Photo/Video/Document par Swipe karke /broadcast likha hai
+    target_msg = update.message.reply_to_message if update.message.reply_to_message else None
+    broadcast_text = " ".join(context.args) if context.args else None
+
+    # Agar na reply me koi media hai aur na aage koi text likha hai
+    if not target_msg and not broadcast_text:
+        await update.message.reply_text(
+            "⚠️ <b>Format Galat Hai!</b>\n\n"
+            "• <b>Text Broadcast:</b> <code>/broadcast Aapka Message</code>\n"
+            "• <b>Media Broadcast:</b> Kisi Photo/Video/File par <b>Reply</b> karke likhein <code>/broadcast</code>",
+            parse_mode="HTML"
+        )
         return
 
-    broadcast_text = " ".join(context.args)
     users = get_all_users()
-
     sent_count = 0
     failed_count = 0
 
-    status_msg = await update.message.reply_text("Broadcast shuru ho raha hai...")
+    status_msg = await update.message.reply_text("📢 Broadcast shuru ho raha hai...")
 
     for uid in users:
         if uid == ADMIN_ID:
             continue
         try:
-            await context.bot.send_message(chat_id=uid, text=broadcast_text)
+            # Agar media par reply karke broadcast kiya hai
+            if target_msg:
+                await context.bot.copy_message(
+                    chat_id=uid,
+                    from_chat_id=ADMIN_ID,
+                    message_id=target_msg.message_id
+                )
+            # Agar direct text broadcast hai
+            else:
+                await context.bot.send_message(
+                    chat_id=uid,
+                    text=broadcast_text
+                )
+            
             sent_count += 1
             await asyncio.sleep(0.05)  # Telegram rate limit prevention
         except Exception:
