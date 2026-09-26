@@ -79,7 +79,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text(
             f"Namaste {user_link}! 👋\n\n"
-            "Apni problem ya sawal yahan likhkar bhejein, humari team jald se jald aapse sampark karegi.",
+            "Apni problem ya movie request yahan likhkar bhejein, humari team jald se jald aapse sampark karegi.",
             parse_mode="HTML"
         )
 
